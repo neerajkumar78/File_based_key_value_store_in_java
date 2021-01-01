@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.json.JSONObject;
 /**
- * This class is saving all the  Settings to a property file
+ * This class is saving all the  Settings to a database file
  * 
  *
  */
@@ -21,42 +21,36 @@ public class DatabaseHandler {
 	private static final ExecutorService updateExecutorService = Executors.newSingleThreadExecutor();
 	
 	/**
-	 * Using this variable when i want to prevent update of properties happen
+	 * Using this variable when i want to prevent update of database happen
 	 */
-	private boolean updatePropertiesLocked;
+	private boolean updateDatabaseLocked;
 	
 	/**
-	 * The absolute path of the properties file
+	 * The absolute path of the pdatabase file
 	 */
 	private String fileAbsolutePath;
 	
 	/**
 	 * Constructor
-	 * 
-	 * @param localDbManager
 	 */
 	public DatabaseHandler(String fileAbsolutePath, boolean updatePropertiesLocked) {
 		
 		//Fields
 		this.fileAbsolutePath = fileAbsolutePath;
-		this.updatePropertiesLocked = updatePropertiesLocked;
+		this.updateDatabaseLocked = updatePropertiesLocked;
 		this.keys = new Properties();
 	}
 	
 	/**
-	 * Updates or Creates the given key , warning also updateProperty can be locked , if you want to unlock it or check if locked check the method is
-	 * `isUpdatePropertyLocked()`
+	 * Updates or Creates the given key , warning also updateDatabase can be locked , if you want to unlock it or check if locked check the method is
+	 * `isUpdateDatabaseLocked()`
 	 * 
 	 * @param key
 	 * @param value
 	 */
 	public void updateKey(String key , JSONObject value) {
-		if (updatePropertiesLocked)
+		if (updateDatabaseLocked)
 			return;
-		
-		///System.out.println("Updating Property!");
-		
-		//Check if exists [ Create if Not ] 
 		File file = new File(fileAbsolutePath);
 		if (!file.exists()) {
 			try {
@@ -70,13 +64,13 @@ public class DatabaseHandler {
 		updateExecutorService.submit(() -> {
 			try (InputStream inStream = new FileInputStream(fileAbsolutePath); OutputStream outStream = new FileOutputStream(fileAbsolutePath)) {
 				
-				//load  properties
+				//load  database
 				keys.load(inStream);
 				
-				// set the properties value
+				// set the database value
 				keys.setProperty(key, value.toString());
 				
-				// save properties 
+				// save database 
 				keys.store(outStream, null);
 				
 			} catch (IOException ex) {
@@ -86,9 +80,7 @@ public class DatabaseHandler {
 	}
 	
 	/**
-	 * Remove that property from the Properties file
-	 * 
-	 * @param key
+	 * Remove that key from the Database file
 	 */
 	public void deleteKey(String key) {
 		//Check if exists 
@@ -98,13 +90,13 @@ public class DatabaseHandler {
 			updateExecutorService.submit(() -> {
 				try (InputStream inStream = new FileInputStream(fileAbsolutePath); OutputStream outStream = new FileOutputStream(fileAbsolutePath)) {
 					
-					//load  properties
+					//load  database
 					keys.load(inStream);
 					
-					// remove that property
+					// remove that from database
 					keys.remove(key);
 					
-					// save properties 
+					// save database 
 					keys.store(outStream, null);
 					
 				} catch (IOException ex) {
@@ -115,7 +107,7 @@ public class DatabaseHandler {
 	}
 	
 	/**
-	 * Loads the Properties
+	 * Loads the Database
 	 */
 	public Properties loadKeys() {
 		
@@ -125,7 +117,6 @@ public class DatabaseHandler {
 			//Load the properties file
 			try (InputStream inStream = new FileInputStream(fileAbsolutePath)) {
 				
-				//load  properties
 				keys.load(inStream);
 				
 			} catch (IOException ex) {
@@ -149,8 +140,8 @@ public class DatabaseHandler {
 	 * 
 	 * @return the canUpdateProperty
 	 */
-	public boolean isUpdatePropertiesLocked() {
-		return updatePropertiesLocked;
+	public boolean isUpdateDatabaseLocked() {
+		return updateDatabaseLocked;
 	}
 	
 	/**
@@ -159,8 +150,8 @@ public class DatabaseHandler {
 	 * @param canUpdateProperty
 	 *            the canUpdateProperty to set
 	 */
-	public void setUpdatePropertiesLocked(boolean updatePropertiesLocked) {
-		this.updatePropertiesLocked = updatePropertiesLocked;
+	public void setUpdatePropertiesLocked(boolean updateDatabaseLocked) {
+		this.updateDatabaseLocked = updateDatabaseLocked;
 	}
 	
 	/**
